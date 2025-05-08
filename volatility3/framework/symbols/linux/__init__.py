@@ -169,6 +169,7 @@ class LinuxUtilities(interfaces.configuration.VersionableInterface):
             return ""
 
         path_reversed = []
+        smeared = False
         while (
             dentry
             and dentry.is_readable()
@@ -190,10 +191,16 @@ class LinuxUtilities(interfaces.configuration.VersionableInterface):
 
             parent = dentry.d_parent
             dname = dentry.d_name.name_as_str()
+            # empty dentry names are most likely
+            # the result of smearing
+            if not dname:
+                smeared = True
             path_reversed.append(dname.strip("/"))
             dentry = parent
 
         path = "/" + "/".join(reversed(path_reversed))
+        if smeared:
+            return f"<potentially smeared> {path}"
         return path
 
     @classmethod
